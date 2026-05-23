@@ -79,6 +79,7 @@ union ioctl_add_subscriber_args {
     bool is_take_sub;
     bool ignore_local_publications;
     bool is_bridge;
+    bool exclusive;
   };
   struct
   {

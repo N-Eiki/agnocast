@@ -21,6 +21,7 @@ static const bool QOS_IS_RELIABLE = true;
 static const bool IS_TAKE_SUB = false;
 static const bool IGNORE_LOCAL_PUBLICATIONS = false;
 static const bool IS_BRIDGE = false;
+static const bool EXCLUSIVE = false;
 
 static void setup_processes(struct kunit * test, const int process_num)
 {
@@ -68,7 +69,7 @@ static topic_local_id_t setup_one_subscriber_on_topic(
   int ret = agnocast_ioctl_add_subscriber(
     topic_name, current->nsproxy->ipc_ns, NODE_NAME, subscriber_pid, QOS_DEPTH,
     QOS_IS_TRANSIENT_LOCAL, QOS_IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE,
-    &add_subscriber_args);
+    EXCLUSIVE, &add_subscriber_args);
 
   KUNIT_ASSERT_EQ(test, ret, 0);
   KUNIT_ASSERT_TRUE(test, agnocast_is_in_topic_htable(topic_name, current->nsproxy->ipc_ns));

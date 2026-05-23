@@ -12,6 +12,7 @@ static pid_t publisher_pid = 2000;
 static bool is_take_sub = false;
 static bool ignore_local_publications = false;
 static bool is_bridge = false;
+static bool exclusive = false;
 
 static void setup_one_subscriber(struct kunit * test, char * topic_name)
 {
@@ -25,7 +26,7 @@ static void setup_one_subscriber(struct kunit * test, char * topic_name)
   int ret2 = agnocast_ioctl_add_subscriber(
     topic_name, current->nsproxy->ipc_ns, node_name, subscriber_pid, qos_depth,
     qos_is_transient_local, qos_is_reliable, is_take_sub, ignore_local_publications, is_bridge,
-    &add_subscriber_args);
+    exclusive, &add_subscriber_args);
 
   KUNIT_ASSERT_EQ(test, ret1, 0);
   KUNIT_ASSERT_EQ(test, ret2, 0);
@@ -191,7 +192,7 @@ void test_case_get_publisher_num_a2r_bridge_exist(struct kunit * test)
   int ret2 = agnocast_ioctl_add_subscriber(
     topic_name, current->nsproxy->ipc_ns, node_name, subscriber_pid, qos_depth,
     qos_is_transient_local, qos_is_reliable, is_take_sub, ignore_local_publications, true,
-    &add_subscriber_args);
+    exclusive, &add_subscriber_args);
   KUNIT_ASSERT_EQ(test, ret2, 0);
 
   union ioctl_get_publisher_num_args publisher_num_args;

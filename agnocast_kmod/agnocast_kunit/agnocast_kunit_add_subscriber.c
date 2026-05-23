@@ -13,6 +13,7 @@ static const bool QOS_IS_RELIABLE = true;
 static const bool IS_TAKE_SUB = false;
 static const bool IGNORE_LOCAL_PUBLICATIONS = false;
 static const bool IS_BRIDGE = false;
+static const bool EXCLUSIVE = false;
 
 static void setup_process(struct kunit * test, const pid_t pid)
 {
@@ -35,7 +36,7 @@ void test_case_add_subscriber_normal(struct kunit * test)
   int ret = agnocast_ioctl_add_subscriber(
     TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, subscriber_pid, qos_depth,
     QOS_IS_TRANSIENT_LOCAL, QOS_IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE,
-    &add_subscriber_args);
+    EXCLUSIVE, &add_subscriber_args);
 
   // Assert
   KUNIT_EXPECT_EQ(test, ret, 0);
@@ -63,14 +64,14 @@ void test_case_add_subscriber_too_many_subscribers(struct kunit * test)
     agnocast_ioctl_add_subscriber(
       TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, subscriber_pid, qos_depth,
       QOS_IS_TRANSIENT_LOCAL, QOS_IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE,
-      &add_subscriber_args);
+      EXCLUSIVE, &add_subscriber_args);
   }
 
   // Act
   int ret = agnocast_ioctl_add_subscriber(
     TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, subscriber_pid, qos_depth,
     QOS_IS_TRANSIENT_LOCAL, QOS_IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE,
-    &add_subscriber_args);
+    EXCLUSIVE, &add_subscriber_args);
 
   // Assert
   KUNIT_EXPECT_EQ(test, ret, -ENOBUFS);

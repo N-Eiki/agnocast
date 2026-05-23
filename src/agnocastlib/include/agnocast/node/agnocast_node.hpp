@@ -458,7 +458,7 @@ public:
     const std::string & topic_name, const rclcpp::QoS & qos, Func && callback,
     agnocast::SubscriptionOptions options = agnocast::SubscriptionOptions{})
   {
-    return std::make_shared<Subscription<MessageT>>(
+    return Subscription<MessageT>::create(
       this, topic_name, qos, std::forward<Func>(callback), options);
   }
 
@@ -476,7 +476,7 @@ public:
     const std::string & topic_name, size_t queue_size, Func && callback,
     agnocast::SubscriptionOptions options = agnocast::SubscriptionOptions{})
   {
-    return std::make_shared<Subscription<MessageT>>(
+    return Subscription<MessageT>::create(
       this, topic_name, rclcpp::QoS(rclcpp::KeepLast(queue_size)), std::forward<Func>(callback),
       options);
   }
@@ -491,7 +491,7 @@ public:
   typename agnocast::PollingSubscriber<MessageT>::SharedPtr create_subscription(
     const std::string & topic_name, const size_t qos_history_depth)
   {
-    return std::make_shared<PollingSubscriber<MessageT>>(
+    return PollingSubscriber<MessageT>::create(
       this, topic_name, rclcpp::QoS(rclcpp::KeepLast(qos_history_depth)));
   }
 
@@ -505,7 +505,7 @@ public:
   typename agnocast::PollingSubscriber<MessageT>::SharedPtr create_subscription(
     const std::string & topic_name, const rclcpp::QoS & qos)
   {
-    return std::make_shared<PollingSubscriber<MessageT>>(this, topic_name, qos);
+    return PollingSubscriber<MessageT>::create(this, topic_name, qos);
   }
 
   /// Create a wall timer.

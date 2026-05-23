@@ -160,8 +160,8 @@ public:
     std::string topic_name = create_service_response_topic_name(service_name_, node_name_);
     std::visit(
       [this, &topic_name, &qos, cb = std::move(subscriber_callback), &options](auto * node) {
-        subscriber_ = std::make_shared<ServiceResponseSubscriber>(
-          node, topic_name, qos, std::move(cb), options);
+        subscriber_ =
+          ServiceResponseSubscriber::create(node, topic_name, qos, std::move(cb), options);
       },
       node_);
   }

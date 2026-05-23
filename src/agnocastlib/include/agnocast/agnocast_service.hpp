@@ -114,7 +114,7 @@ public:
 
     SubscriptionOptions options{group};
     std::string topic_name = create_service_request_topic_name(service_name_);
-    subscriber_ = std::make_shared<BasicSubscription<RequestT, NoBridgeRequestPolicy>>(
+    subscriber_ = BasicSubscription<RequestT, NoBridgeRequestPolicy>::create(
       node, topic_name, qos_, std::move(subscriber_callback), options);
 
     BridgeRequestPolicy::template request_bridge<NodeT, ServiceT>(node, service_name_);

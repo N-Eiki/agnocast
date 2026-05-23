@@ -207,7 +207,7 @@ public:
     // Subscribe to Agnocast (shared memory).
     // The QoS settings are now passed via argument to inherit the settings
     // from the corresponding Agnocast publisher (e.g. Reliable or BestEffort).
-    agnocast_sub_ = std::make_shared<AgnoSub>(
+    agnocast_sub_ = AgnoSub::create(
       parent_node.get(), topic_name, sub_qos,
       [this](const agnocast::ipc_shared_ptr<MessageT> msg) {
         auto loaned_msg = this->ros_pub_->borrow_loaned_message();

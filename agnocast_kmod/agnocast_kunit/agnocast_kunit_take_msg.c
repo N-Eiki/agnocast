@@ -13,6 +13,7 @@ static const bool IS_TAKE_SUB = true;
 static const bool IS_RELIABLE = true;
 static const bool IGNORE_LOCAL_PUBLICATIONS = false;
 static const bool IS_BRIDGE = false;
+static const bool EXCLUSIVE = false;
 
 static topic_local_id_t subscriber_ids_buf[MAX_SUBSCRIBER_NUM];
 
@@ -30,7 +31,8 @@ static void setup_one_subscriber(
   union ioctl_add_subscriber_args add_subscriber_args;
   int ret2 = agnocast_ioctl_add_subscriber(
     TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, subscriber_pid, qos_depth, is_transient_local,
-    IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE, &add_subscriber_args);
+    IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE, EXCLUSIVE,
+    &add_subscriber_args);
   *subscriber_id = add_subscriber_args.ret_id;
 
   KUNIT_ASSERT_EQ(test, ret1, 0);
@@ -779,7 +781,8 @@ void test_case_take_msg_pubsub_in_same_process(struct kunit * test)
   const uint32_t subscriber_qos_depth = 10;
   int ret2 = agnocast_ioctl_add_subscriber(
     TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, pid, subscriber_qos_depth, is_transient_local,
-    IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE, &add_subscriber_args);
+    IS_RELIABLE, IS_TAKE_SUB, IGNORE_LOCAL_PUBLICATIONS, IS_BRIDGE, EXCLUSIVE,
+    &add_subscriber_args);
 
   union ioctl_add_publisher_args add_publisher_args;
   const uint32_t publisher_qos_depth = 10;
@@ -1034,7 +1037,8 @@ void test_case_take_msg_ignore_local_same_pid_enabled(struct kunit * test)
   union ioctl_add_subscriber_args add_subscriber_args;
   int ret3 = agnocast_ioctl_add_subscriber(
     TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, pid, qos_depth, is_transient_local,
-    IS_RELIABLE, IS_TAKE_SUB, ignore_local_publications, IS_BRIDGE, &add_subscriber_args);
+    IS_RELIABLE, IS_TAKE_SUB, ignore_local_publications, IS_BRIDGE, EXCLUSIVE,
+    &add_subscriber_args);
   KUNIT_ASSERT_EQ(test, ret3, 0);
 
   // Publish a message
@@ -1079,7 +1083,8 @@ void test_case_take_msg_ignore_local_same_pid_disabled(struct kunit * test)
   union ioctl_add_subscriber_args add_subscriber_args;
   int ret3 = agnocast_ioctl_add_subscriber(
     TOPIC_NAME, current->nsproxy->ipc_ns, NODE_NAME, pid, qos_depth, is_transient_local,
-    IS_RELIABLE, IS_TAKE_SUB, ignore_local_publications, IS_BRIDGE, &add_subscriber_args);
+    IS_RELIABLE, IS_TAKE_SUB, ignore_local_publications, IS_BRIDGE, EXCLUSIVE,
+    &add_subscriber_args);
   KUNIT_ASSERT_EQ(test, ret3, 0);
 
   // Publish a message

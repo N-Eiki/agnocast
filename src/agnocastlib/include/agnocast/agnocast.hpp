@@ -124,7 +124,7 @@ typename Subscription<MessageT>::SharedPtr create_subscription(
   static_assert(
     std::is_base_of_v<rclcpp::Node, NodeT> || std::is_base_of_v<agnocast::Node, NodeT>,
     "NodeT must be rclcpp::Node or agnocast::Node (or derived from them)");
-  return std::make_shared<BasicSubscription<MessageT, RosToAgnocastPubsubRequestPolicy>>(
+  return BasicSubscription<MessageT, RosToAgnocastPubsubRequestPolicy>::create(
     node, topic_name, qos, std::forward<Func>(callback), options);
 }
 
@@ -147,7 +147,7 @@ typename Subscription<MessageT>::SharedPtr create_subscription(
   static_assert(
     std::is_base_of_v<rclcpp::Node, NodeT> || std::is_base_of_v<agnocast::Node, NodeT>,
     "NodeT must be rclcpp::Node or agnocast::Node (or derived from them)");
-  return std::make_shared<BasicSubscription<MessageT, RosToAgnocastPubsubRequestPolicy>>(
+  return BasicSubscription<MessageT, RosToAgnocastPubsubRequestPolicy>::create(
     node, topic_name, rclcpp::QoS(rclcpp::KeepLast(qos_history_depth)),
     std::forward<Func>(callback), options);
 }
@@ -167,7 +167,7 @@ typename PollingSubscriber<MessageT>::SharedPtr create_subscription(
   static_assert(
     std::is_base_of_v<rclcpp::Node, NodeT> || std::is_base_of_v<agnocast::Node, NodeT>,
     "NodeT must be rclcpp::Node or agnocast::Node (or derived from them)");
-  return std::make_shared<BasicPollingSubscriber<MessageT, RosToAgnocastPubsubRequestPolicy>>(
+  return BasicPollingSubscriber<MessageT, RosToAgnocastPubsubRequestPolicy>::create(
     node, topic_name, rclcpp::QoS(rclcpp::KeepLast(qos_history_depth)));
 }
 
@@ -186,7 +186,7 @@ typename PollingSubscriber<MessageT>::SharedPtr create_subscription(
   static_assert(
     std::is_base_of_v<rclcpp::Node, NodeT> || std::is_base_of_v<agnocast::Node, NodeT>,
     "NodeT must be rclcpp::Node or agnocast::Node (or derived from them)");
-  return std::make_shared<BasicPollingSubscriber<MessageT, RosToAgnocastPubsubRequestPolicy>>(
+  return BasicPollingSubscriber<MessageT, RosToAgnocastPubsubRequestPolicy>::create(
     node, topic_name, qos);
 }
 

@@ -17,9 +17,10 @@ SubscriptionBase::SubscriptionBase(
   validate_ld_preload();
 }
 
-union ioctl_add_subscriber_args SubscriptionBase::initialize(
+int SubscriptionBase::initialize(
   const rclcpp::QoS & qos, const bool is_take_sub, const bool ignore_local_publications,
-  const bool is_bridge, const std::string & node_name)
+  const bool is_bridge, const bool exclusive, const std::string & node_name,
+  topic_local_id_t & ret_id)
 {
   union ioctl_add_subscriber_args add_subscriber_args = {};
   add_subscriber_args.topic_name = {topic_name_.c_str(), topic_name_.size()};
@@ -31,13 +32,16 @@ union ioctl_add_subscriber_args SubscriptionBase::initialize(
   add_subscriber_args.is_take_sub = is_take_sub;
   add_subscriber_args.ignore_local_publications = ignore_local_publications;
   add_subscriber_args.is_bridge = is_bridge;
-  if (ioctl(agnocast_fd, AGNOCAST_ADD_SUBSCRIBER_CMD, &add_subscriber_args) < 0) {
-    RCLCPP_ERROR(logger, "AGNOCAST_ADD_SUBSCRIBER_CMD failed: %s", strerror(errno));
-    close(agnocast_fd);
-    exit(EXIT_FAILURE);
+  add_subscriber_args.exclusive = exclusive;
+
+  int ret = ioctl(agnocast_fd, AGNOCAST_ADD_SUBSCRIBER_CMD, &add_subscriber_args);
+  if (ret != 0) {
+    ret_id = -1;
+  } else {
+    ret_id = add_subscriber_args.ret_id;
   }
 
-  return add_subscriber_args;
+  return ret;
 }
 
 uint32_t get_publisher_count_core(const std::string & topic_name)

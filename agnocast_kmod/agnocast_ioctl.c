@@ -603,7 +603,7 @@ int agnocast_ioctl_add_subscriber(
   const char * topic_name, const struct ipc_namespace * ipc_ns, const char * node_name,
   const pid_t subscriber_pid, const uint32_t qos_depth, const bool qos_is_transient_local,
   const bool qos_is_reliable, const bool is_take_sub, const bool ignore_local_publications,
-  const bool is_bridge, union ioctl_add_subscriber_args * ioctl_ret)
+  const bool is_bridge, const bool exclusive, union ioctl_add_subscriber_args * ioctl_ret)
 {
   int ret;
 
@@ -612,6 +612,11 @@ int agnocast_ioctl_add_subscriber(
   struct topic_wrapper * wrapper;
   ret = add_topic(topic_name, ipc_ns, &wrapper);
   if (ret < 0) {
+    goto unlock;
+  }
+
+  if (exclusive && agnocast_get_size_sub_info_htable(wrapper) > 0) {
+    ret = -EEXIST;
     goto unlock;
   }
 
@@ -2182,7 +2187,7 @@ static long add_subscriber_cmd(union ioctl_add_subscriber_args __user * arg)
   ret = agnocast_ioctl_add_subscriber(
     topic_name_buf, ipc_ns, node_name_buf, pid, sub_args.qos_depth, sub_args.qos_is_transient_local,
     sub_args.qos_is_reliable, sub_args.is_take_sub, sub_args.ignore_local_publications,
-    sub_args.is_bridge, &sub_args);
+    sub_args.is_bridge, sub_args.exclusive, &sub_args);
   if (ret == 0) {
     if (copy_to_user(arg, &sub_args, sizeof(sub_args))) return -EFAULT;
   }
