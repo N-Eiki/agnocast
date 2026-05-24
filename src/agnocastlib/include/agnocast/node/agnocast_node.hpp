@@ -609,7 +609,8 @@ public:
   /// @param callback Callback invoked on each request.
   /// @param qos Quality of service profile. Defaults to `rclcpp::ServicesQoS()`.
   /// @param group Callback group. Defaults to `nullptr` (default callback group).
-  /// @return Shared pointer to the created service.
+  /// @return Shared pointer to the created service. If there is already a service with the same
+  /// name, `nullptr` is returned.
   // AGNOCAST_PUBLIC
   template <typename ServiceT, typename Func>
   typename agnocast::Service<ServiceT>::SharedPtr create_service(
@@ -622,8 +623,7 @@ public:
       "Agnocast service/client is not officially supported yet and the API may change in the "
       "future: %s",
       get_node_services_interface()->resolve_service_name(service_name).c_str());
-    return std::make_shared<Service<ServiceT>>(
-      this, service_name, std::forward<Func>(callback), qos, group);
+    return Service<ServiceT>::create(this, service_name, std::forward<Func>(callback), qos, group);
   }
 
 private:

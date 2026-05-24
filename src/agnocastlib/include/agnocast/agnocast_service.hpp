@@ -51,14 +51,20 @@ private:
 public:
   using SharedPtr = std::shared_ptr<BasicService<ServiceT, BridgeRequestPolicy>>;
 
-  template <typename Func, typename NodeT>
-  BasicService(
-    NodeT * node, const std::string & service_name, Func && callback, const rclcpp::QoS & qos,
-    rclcpp::CallbackGroup::SharedPtr group)
+  template <typename NodeT>
+  BasicService(NodeT * node, const std::string & service_name, const rclcpp::QoS & qos)
   : node_(node),
     service_name_(node->get_node_services_interface()->resolve_service_name(service_name)),
     // TransientLocal durability is not allowed for services.
     qos_(rclcpp::QoS(qos).durability_volatile())
+  {
+  }
+
+  // Returns nullptr if there is already an Agnocast serivce with the same name.
+  template <typename Func, typename NodeT>
+  static SharedPtr create(
+    NodeT * node, const std::string & service_name, Func && callback, const rclcpp::QoS & qos,
+    rclcpp::CallbackGroup::SharedPtr group)
   {
     static_assert(
       std::is_same_v<NodeT, rclcpp::Node> || std::is_same_v<NodeT, agnocast::Node>,
@@ -72,24 +78,27 @@ public:
       "Callback must be callable with ipc_shared_ptr<ServiceT::Request> and "
       "ipc_shared_ptr<ServiceT::Response> (const&, &&, or by-value)");
 
-    auto subscriber_callback = [this, callback = std::forward<Func>(callback)](
+    auto srv =
+      std::make_shared<BasicService<ServiceT, BridgeRequestPolicy>>(node, service_name, qos);
+
+    auto subscriber_callback = [srv, callback = std::forward<Func>(callback)](
                                  ipc_shared_ptr<RequestT> && request) {
       typename ServiceResponsePublisher::SharedPtr publisher;
 
       {
-        std::lock_guard<std::mutex> lock(publishers_mtx_);
-        auto it = publishers_.find(request->_node_name);
-        if (it == publishers_.end()) {
+        std::lock_guard<std::mutex> lock(srv->publishers_mtx_);
+        auto it = srv->publishers_.find(request->_node_name);
+        if (it == srv->publishers_.end()) {
           std::string topic_name =
-            create_service_response_topic_name(service_name_, request->_node_name);
+            create_service_response_topic_name(srv->service_name_, request->_node_name);
           std::visit(
-            [this, &publisher, &topic_name](auto * node) {
+            [&srv, &publisher, &topic_name](auto * node) {
               agnocast::PublisherOptions pub_options;
-              publisher =
-                std::make_shared<ServiceResponsePublisher>(node, topic_name, qos_, pub_options);
+              publisher = std::make_shared<ServiceResponsePublisher>(
+                node, topic_name, srv->qos_, pub_options);
             },
-            node_);
-          publishers_[request->_node_name] = publisher;
+            srv->node_);
+          srv->publishers_[request->_node_name] = publisher;
         } else {
           publisher = it->second;
         }
@@ -112,12 +121,20 @@ public:
       //   (and erroneous) writes to the response via `response_double`.
     };
 
-    SubscriptionOptions options{group};
-    std::string topic_name = create_service_request_topic_name(service_name_);
-    subscriber_ = BasicSubscription<RequestT, NoBridgeRequestPolicy>::create(
-      node, topic_name, qos_, std::move(subscriber_callback), options);
+    SubscriptionOptions options{};
+    options.callback_group = group;
+    options.exclusive = true;
+    std::string topic_name = create_service_request_topic_name(srv->service_name_);
+    srv->subscriber_ = BasicSubscription<RequestT, NoBridgeRequestPolicy>::create(
+      node, topic_name, srv->qos_, std::move(subscriber_callback), options);
 
-    BridgeRequestPolicy::template request_bridge<NodeT, ServiceT>(node, service_name_);
+    if (srv->subscriber_ == nullptr) {
+      return nullptr;
+    }
+
+    BridgeRequestPolicy::template request_bridge<NodeT, ServiceT>(node, srv->service_name_);
+
+    return srv;
   }
 };
 

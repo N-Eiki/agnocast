@@ -37,7 +37,7 @@ ParameterService::ParameterService(
 
   const std::string node_name = node->get_name();
 
-  get_parameters_service_ = std::make_shared<Service<GetParameters>>(
+  get_parameters_service_ = Service<GetParameters>::create(
     node, node_name + "/" + parameter_service_names::get_parameters,
     [node, node_params](
       const agnocast::ipc_shared_ptr<GetParameters::Request> & request,
@@ -55,7 +55,7 @@ ParameterService::ParameterService(
     },
     qos_profile, nullptr);
 
-  get_parameter_types_service_ = std::make_shared<Service<GetParameterTypes>>(
+  get_parameter_types_service_ = Service<GetParameterTypes>::create(
     node, node_name + "/" + parameter_service_names::get_parameter_types,
     [node, node_params](
       const agnocast::ipc_shared_ptr<GetParameterTypes::Request> & request,
@@ -71,7 +71,7 @@ ParameterService::ParameterService(
     },
     qos_profile, nullptr);
 
-  set_parameters_service_ = std::make_shared<Service<SetParameters>>(
+  set_parameters_service_ = Service<SetParameters>::create(
     node, node_name + "/" + parameter_service_names::set_parameters,
     [node, node_params](
       const agnocast::ipc_shared_ptr<SetParameters::Request> & request,
@@ -91,7 +91,7 @@ ParameterService::ParameterService(
     },
     qos_profile, nullptr);
 
-  set_parameters_atomically_service_ = std::make_shared<Service<SetParametersAtomically>>(
+  set_parameters_atomically_service_ = Service<SetParametersAtomically>::create(
     node, node_name + "/" + parameter_service_names::set_parameters_atomically,
     [node, node_params](
       const agnocast::ipc_shared_ptr<SetParametersAtomically::Request> & request,
@@ -113,7 +113,7 @@ ParameterService::ParameterService(
     },
     qos_profile, nullptr);
 
-  describe_parameters_service_ = std::make_shared<Service<DescribeParameters>>(
+  describe_parameters_service_ = Service<DescribeParameters>::create(
     node, node_name + "/" + parameter_service_names::describe_parameters,
     [node, node_params](
       const agnocast::ipc_shared_ptr<DescribeParameters::Request> & request,
@@ -127,7 +127,7 @@ ParameterService::ParameterService(
     },
     qos_profile, nullptr);
 
-  list_parameters_service_ = std::make_shared<Service<ListParameters>>(
+  list_parameters_service_ = Service<ListParameters>::create(
     node, node_name + "/" + parameter_service_names::list_parameters,
     [node_params](
       const agnocast::ipc_shared_ptr<ListParameters::Request> & request,
