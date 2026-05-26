@@ -110,6 +110,18 @@ struct RosToAgnocastServiceRequestPolicy
   }
 };
 
+// Policy for agnocast::Client.
+// Requests a bridge that forwards requests from Agnocast to ROS 2 (A2R).
+struct AgnocastToRosServiceRequestPolicy
+{
+  template <typename ServiceT>
+  static void request_bridge(const std::string & service_name)
+  {
+    request_service_bridge_core<ServiceT>(
+      service_name, BridgeDirection::AGNOCAST_TO_ROS2, std::nullopt);
+  }
+};
+
 // Dummy policy to avoid circular header dependencies.
 // Used internally by BridgeNode, Service, and Client where bridge requests
 // are not needed and would cause include cycles.
