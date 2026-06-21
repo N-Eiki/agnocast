@@ -129,7 +129,7 @@ struct topic_wrapper
     ipc_ns;  // For use in separating topic namespaces when using containers.
   char * key;
   struct rw_semaphore
-    topic_rwsem;  // Per-topic rwsem: read for read-only ops, write for publish/receive/modify
+    topic_rwsem;  // Per-topic rwsem: read for receive/take/read-only ops, write for publish/modify
   struct topic_struct topic;
   struct hlist_node node;
 };
