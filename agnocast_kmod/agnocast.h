@@ -47,6 +47,7 @@ union ioctl_add_process_args {
     uint64_t ret_shm_size;
     bool ret_unlink_daemon_exist;
     bool ret_performance_bridge_daemon_exist;
+    bool ret_discovery_agent_exist;
   };
 };
 
@@ -266,6 +267,12 @@ struct ioctl_check_and_request_bridge_shutdown_args
   bool ret_should_shutdown;
 };
 
+struct ioctl_discovery_agent_should_exit_args
+{
+  uint32_t domain_id;
+  bool ret_should_exit;
+};
+
 struct ioctl_set_ros2_subscriber_num_args
 {
   struct name_info topic_name;
@@ -301,6 +308,9 @@ struct ioctl_set_ros2_publisher_num_args
   _IOW(0xA6, 25, struct ioctl_set_ros2_subscriber_num_args)
 #define AGNOCAST_SET_ROS2_PUBLISHER_NUM_CMD _IOW(0xA6, 26, struct ioctl_set_ros2_publisher_num_args)
 #define AGNOCAST_NOTIFY_BRIDGE_SHUTDOWN_CMD _IO(0xA6, 27)
+// 28 is reserved for AGNOCAST_ADD_DOMAIN_BRIDGE_CMD on the in-review domain-bridge stack.
+#define AGNOCAST_DISCOVERY_AGENT_SHOULD_EXIT_CMD \
+  _IOWR(0xA6, 29, struct ioctl_discovery_agent_should_exit_args)
 
 // ================================================
 // ros2cli ioctls
@@ -471,6 +481,9 @@ int agnocast_ioctl_set_ros2_publisher_num(
   const char * topic_name, const struct ipc_namespace * ipc_ns, uint32_t count);
 
 int agnocast_ioctl_notify_bridge_shutdown(const pid_t pid);
+
+int agnocast_ioctl_discovery_agent_should_exit(
+  const struct ipc_namespace * ipc_ns, const uint32_t domain_id, bool * ret_should_exit);
 
 int agnocast_ioctl_get_exit_process(
   const struct ipc_namespace * ipc_ns, struct ioctl_get_exit_process_args * ioctl_ret,
