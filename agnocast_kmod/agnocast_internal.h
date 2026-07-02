@@ -5,6 +5,7 @@
 #include "agnocast_memory_allocator.h"
 
 #include <linux/device.h>
+#include <linux/eventfd.h>
 #include <linux/fs.h>
 #include <linux/hashtable.h>
 #include <linux/kernel.h>
@@ -102,8 +103,25 @@ struct subscriber_info
   bool ignore_local_publications;
   bool need_mmap_update;
   bool is_bridge;
+  struct eventfd_ctx * notify_ctx;  // eventfd for publish notifications (NULL for take_sub)
   struct hlist_node node;
 };
+
+// eventfd_signal() dropped its count argument in 6.8; wrap it so both APIs compile.
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 8, 0)
+static inline void agnocast_eventfd_signal(struct eventfd_ctx * ctx)
+{
+  eventfd_signal(ctx, 1);
+}
+#else
+#define agnocast_eventfd_signal(ctx) eventfd_signal(ctx)
+#endif
+
+// Stack buffer size for collecting subscriber notify_ctx pointers in publish_msg before signaling
+// them outside topic_rwsem. Covers typical ROS 2 fan-out (N <= 10; /tf-like outliers reach 100+)
+// while bounding stack use (64 * sizeof(void *) = 512 B). Larger fan-out falls back to
+// kcalloc(GFP_ATOMIC).
+#define NOTIFY_CTX_STACK_SIZE 64
 
 // Helper to copy a name_info string from userspace to a kernel stack buffer.
 // Returns 0 on success, -EINVAL if too long, -EFAULT on copy failure.
